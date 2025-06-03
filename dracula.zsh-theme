@@ -30,8 +30,17 @@ DRACULA_DISPLAY_TIME=${DRACULA_DISPLAY_TIME:-0}
 # Set to 1 to show the 'context' segment
 DRACULA_DISPLAY_CONTEXT=${DRACULA_DISPLAY_CONTEXT:-0}
 
+# Set to 1 to show the 'context' segment only when logged in via ssh or root
+DRACULA_DISPLAY_CONTEXT_SSH_ROOT_ONLY=${DRACULA_DISPLAY_CONTEXT_SSH_ROOT_ONLY:-0}
+
 # Changes the arrow icon
 DRACULA_ARROW_ICON=${DRACULA_ARROW_ICON:-➜ }
+
+# Changes the clean icon
+DRACULA_CLEAN_ICON=${DRACULA_CLEAN_ICON:-✔ }
+
+# Changes the dirty icon
+DRACULA_DIRTY_ICON=${DRACULA_DIRTY_ICON:-✗ }
 
 # Set to 1 to use a new line for commands
 DRACULA_DISPLAY_NEW_LINE=${DRACULA_DISPLAY_NEW_LINE:-0}
@@ -102,13 +111,15 @@ PROMPT+='%F{green}%B$(dracula_time_segment)'
 
 # User context segment {{{
 dracula_context() {
-	if (( DRACULA_DISPLAY_CONTEXT )); then
-		if [[ -n "${SSH_CONNECTION-}${SSH_CLIENT-}${SSH_TTY-}" ]] || (( EUID == 0 )); then
-			echo '%n@%m '
-		else
-			echo '%n '
-		fi
-	fi
+    if (( DRACULA_DISPLAY_CONTEXT )); then
+        if [[ -n "${SSH_CONNECTION-}${SSH_CLIENT-}${SSH_TTY-}" ]] || (( EUID == 0 )); then
+            echo '%n@%m '
+        else 
+            if (( ! DRACULA_DISPLAY_CONTEXT_SSH_ROOT_ONLY )); then
+                echo '%n '
+            fi
+        fi
+    fi
 }
 
 PROMPT+='%F{magenta}%B$(dracula_context)'
@@ -187,8 +198,8 @@ add-zsh-hook precmd dracula_git_async
 
 PROMPT+='$DRACULA_GIT_STATUS'
 
-ZSH_THEME_GIT_PROMPT_CLEAN=") %F{green}%B✔ "
-ZSH_THEME_GIT_PROMPT_DIRTY=") %F{yellow}%B✗ "
+ZSH_THEME_GIT_PROMPT_CLEAN=") %F{green}%B${DRACULA_CLEAN_ICON} "
+ZSH_THEME_GIT_PROMPT_DIRTY=") %F{yellow}%B${DRACULA_DIRTY_ICON} "
 ZSH_THEME_GIT_PROMPT_PREFIX="%F{cyan}%B("
 ZSH_THEME_GIT_PROMPT_SUFFIX="%f%b"
 # }}}
